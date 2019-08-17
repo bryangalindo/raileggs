@@ -14,8 +14,8 @@ uprr_tracing_results_dict = up.get_tracking_dict(up_container_list)
 updated_containers_list = []
 
 for k, v in uprr_tracing_results_dict.items():
-    scheduled_event = uprr.get_scheduled_event(v)
-    past_event = uprr.get_past_event(v)
+    scheduled_event = uprr.get_uprr_event(v, 'scheduled')
+    past_event = uprr.get_uprr_event(v, 'past')
     try:
         if 'Van Notification' in past_event:
             last_free_day = up.get_last_free_day(v)

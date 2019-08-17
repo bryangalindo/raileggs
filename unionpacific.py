@@ -56,25 +56,16 @@ class UnionPacific:
         return datetime.strftime(arrival_eta_datetime, '%Y-%m-%d')
 
 
-def get_scheduled_event(_dict):
+def get_uprr_event(_dict, event):
+    event_dict = {
+        'past': 'accomplished_events',
+        'scheduled': 'scheduled_events',
+    }
     try:
         return '{}, {}\t{} {}'.format(
-            _dict['fields']['scheduled_events'][0]['location']['city'],
-            _dict['fields']['scheduled_events'][0]['location']['state'],
-            _dict['fields']['scheduled_events'][0]['name'],
-            _dict['fields']['scheduled_events'][0]['dateTime']
-        )
+            _dict['fields'][event_dict[event]][0]['location']['city'],
+            _dict['fields'][event_dict[event]][0]['location']['state'],
+            _dict['fields'][event_dict[event]][0]['name'],
+            _dict['fields'][event_dict[event]][0]['dateTime'])
     except (IndexError, KeyError):
         pass
-
-
-def get_past_event(_dict):
-    try:
-        return '{}, {}\t{} {}'.format(
-            _dict['fields']['accomplished_events'][0]['location']['city'],
-            _dict['fields']['accomplished_events'][0]['location']['state'],
-            _dict['fields']['accomplished_events'][0]['name'],
-            _dict['fields']['accomplished_events'][0]['dateTime'])
-    except (IndexError, KeyError):
-        pass
-
