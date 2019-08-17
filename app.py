@@ -1,10 +1,15 @@
 import unionpacific as uprr
 import bnsf
+import cn_rail as cn
 import database as db
+from constants import cn_scrape_url
 
+'''
+BNSF RAIL TRACING
+'''
 bnsf = bnsf.BNSF()
 bnsf_container_list = db.get_containers_by_rail()['BNSF']
-bnsf_tracing_results_list = (bnsf.get_tracing_results_dict(bnsf_container_list)).sort()
+bnsf_tracing_results_list = bnsf.get_tracing_results_dict(bnsf_container_list)
 for i, container in enumerate(bnsf_tracing_results_list):
     tracing_results = 'Last location: {}\nFinal destination: {} {}'.format(
         container['last_location'],
@@ -16,9 +21,27 @@ for i, container in enumerate(bnsf_tracing_results_list):
     if container['last_free_day']:
         db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
 
+'''
+CN RAIL TRACING
+'''
+cn_container_list = db.get_containers_by_rail()['CN']
+cn = cn.CanadianRail(cn_scrape_url, cn_container_list)
 
-print('hello')
+container_html = cn.extract_containers_from_html()
+for i, container in enumerate(container_html['location_html']):
+    tracing_results = 'Last location: {}\nFinal destination: {} {}\nLast event: {} {}'.format(
+        cn.get_current_location(i, container_html)['current_location'],
+        cn.get_next_destination(i, container_html)['destination'],
+        cn.get_final_eta(i, container_html)['final_eta'],
+        cn.get_current_event(i, container_html)['most_recent_event'],
+        cn.get_current_event(i, container_html)['datetime'],
+    )
+    db.update_container_tracing(cn_container_list[i], tracing_results)
+    db.update_container_eta(cn_container_list[i], cn.get_final_eta(i, container_html)['final_eta'])
 
+'''
+UP RAIL TRACING
+'''
 up = uprr.UnionPacific()
 up_container_list = db.get_containers_by_rail()['UP']
 uprr_tracing_results_dict = up.get_tracking_dict(up_container_list)
