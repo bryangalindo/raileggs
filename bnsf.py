@@ -27,7 +27,7 @@ class BNSF:
             tracing_results_list.append(dict(
                 container_number='{}{}'.format((tag.find('td', {'id': 'UnitInit'})).text,
                                                (tag.find('td', {'id': 'UnitNumber'})).text),
-                last_destination=(tag.find('td', {'id': 'LastHub'})).text,
+                last_location=(tag.find('td', {'id': 'LastHub'})).text,
                 final_destination=(tag.find('td', {'id': 'DestHub'})).text,
                 last_free_day=(tag.find('td', {'id': 'LastFreeDay'})).text,
                 eta='{} {}'.format((tag.find('td', {'id': 'EstDRMPDate'})).text,

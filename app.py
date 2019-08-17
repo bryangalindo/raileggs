@@ -2,9 +2,20 @@ import unionpacific as uprr
 import bnsf
 import database as db
 
-# bnsf = bnsf.BNSF()
-# bnsf_container_list = db.get_containers_by_rail()['BNSF']
-# bnsf_tracing_results_dict = bnsf.get_tracing_results_dict(bnsf_container_list)
+bnsf = bnsf.BNSF()
+bnsf_container_list = db.get_containers_by_rail()['BNSF']
+bnsf_tracing_results_list = (bnsf.get_tracing_results_dict(bnsf_container_list)).sort()
+for i, container in enumerate(bnsf_tracing_results_list):
+    tracing_results = 'Last location: {}\nFinal destination: {} {}'.format(
+        container['last_location'],
+        container['final_destination'],
+        container['eta'],
+    )
+    db.update_container_tracing(bnsf_container_list[i], tracing_results)
+    db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
+    if container['last_free_day']:
+        db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
+
 
 print('hello')
 
