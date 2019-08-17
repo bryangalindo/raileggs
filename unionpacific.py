@@ -26,6 +26,7 @@ class UnionPacific:
                         'storage_details': container['storageCharges'],
                         'scheduled_events': container['scheduledEvents'],
                         'accomplished_events': container['accomplishedEvents'],
+                        'billed_status': container['billedStatus'],
                     }
                 }
             )
