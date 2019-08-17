@@ -2,7 +2,8 @@ from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
-import lxml
+
+from constants import load_status_dict, cn_rail_events_dict
 
 
 class CanadianRail:
@@ -62,53 +63,3 @@ class CanadianRail:
 
     def remove_at(self, index, s):
         return s[:index] + s[index + 1:]
-
-
-cn_rail_events_dict = {
-    'A': 'Arrived at location',
-    'B': 'Bad order (needs repair)',
-    'C': 'Came in the gate of an intermodal terminal',
-    'D': 'Arrived at final destination yard or terminal',
-    'E': 'Exit the gate of an intermodal terminal',
-    'F': 'Flat Car has been reported in bad order (needs repair)',
-    'G': 'Released from bad order (repair) and returned to service',
-    'H': 'Hold status',
-    'J': 'Junction delivery (interchange to another railroad)',
-    'K': 'Intermodal Interchange',
-    'L': 'Loaded',
-    'M': 'Motor carrier move',
-    'P': 'Passed a station on a train (departure)',
-    'Q': 'Flat Car released from bad order (repair)',
-    'R': 'Received at junction interchange from another railroad',
-    'S': 'Stored',
-    'U': 'Ramped, intermodal unit loaded onto a flatcar',
-    'V': 'Deramped, intermodal unit removed from a flatcar',
-    'W': 'Release by shipper (OK to move)',
-    'X': 'Departed shipper, pickup or pull',
-    'Y': 'Notification or constructive placement',
-    'Z': 'Placement or delivery to consignee ',
-}
-#
-load_status_dict = {
-    'L': 'Loaded',
-    'E': 'Empty'
-}
-
-scrape_url = 'https://automate.cn.ca/ecomsrvc/velocity/Tracing/english/TracingDirect_DirectAccess?&Function=STI&UserID=CENTRANSCN&Password=CENTRANSCN&Format={}&EquipmentID={}'
-containers_list = ['CEOU2018957', 'HLXU6217417', 'DRYU9110697', 'TRLU6915028']
-
-cn = CanadianRail(scrape_url, containers_list)
-
-container_html = cn.extract_containers_from_html()
-for i, container in enumerate(container_html):
-    print(
-        '{}: {} {} {} {} {}'.format(
-            containers_list[i],
-            cn.get_load_status(i, container_html),
-            cn.get_current_location(i, container_html),
-            cn.get_current_event(i, container_html),
-            cn.get_next_destination(i, container_html),
-            cn.get_final_eta(i, container_html),
-        )
-    )
-
