@@ -28,16 +28,18 @@ cn_container_list = db.get_containers_by_rail()['CN']
 cn = cn.CanadianRail(cn_scrape_url, cn_container_list)
 
 container_html = cn.extract_containers_from_html()
-for i, container in enumerate(container_html['location_html']):
+for i in range(len(container_html['eta_html'])-1):
+    most_recent_location =  cn.get_recent_location(i, container_html)['most_recent_location']
+    destination = cn.get_next_destination(i, container_html)['destination']
+    final_eta = cn.get_final_eta(i, container_html)['final_eta']
+    recent_event_dict = cn.get_recent_event(i, container_html)
     tracing_results = 'Last location: {}\nFinal destination: {} {}\nLast event: {} {}'.format(
-        cn.get_current_location(i, container_html)['current_location'],
-        cn.get_next_destination(i, container_html)['destination'],
-        cn.get_final_eta(i, container_html)['final_eta'],
-        cn.get_current_event(i, container_html)['most_recent_event'],
-        cn.get_current_event(i, container_html)['datetime'],
+        most_recent_location, destination,
+        final_eta, recent_event_dict['most_recent_event'],
+        recent_event_dict['datetime'],
     )
     db.update_container_tracing(cn_container_list[i], tracing_results)
-    db.update_container_eta(cn_container_list[i], cn.get_final_eta(i, container_html)['final_eta'])
+    db.update_container_eta(cn_container_list[i], final_eta)
 
 '''
 UP RAIL TRACING
