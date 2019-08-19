@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import unionpacific as uprr
 import bnsf
 import cn_rail as cn
@@ -18,6 +19,7 @@ for i, container in enumerate(bnsf_tracing_results_list):
         container['eta'],
     )
     db.update_container_tracing(bnsf_container_list[i], tracing_results)
+
     try:
         db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
     except IndexError:
@@ -37,13 +39,20 @@ for i in range(len(container_html['eta_html'])-1):
     destination = cn.get_next_destination(i, container_html)['destination']
     final_eta = cn.get_final_eta(i, container_html)['final_eta']
     recent_event_dict = cn.get_recent_event(i, container_html)
+
     tracing_results = 'Last location: {}\nFinal destination: {} {}\nLast event: {} {}'.format(
         most_recent_location, destination,
         final_eta, recent_event_dict['most_recent_event'],
         recent_event_dict['datetime'],
     )
+
     db.update_container_tracing(cn_container_list[i], tracing_results)
     db.update_container_eta(cn_container_list[i], final_eta)
+    if 'constructive' in recent_event_dict['most_recent_event']:
+        final_eta_datetime = datetime.strptime(final_eta, '%m/%d/%Y')
+        last_free_day_datetime = final_eta_datetime + timedelta(days=2)
+        last_free_day = datetime.strftime(last_free_day_datetime, '%m/%d/%Y')
+        db.update_container_lfd(cn_container_list[i], last_free_day)
 
 '''
 UP RAIL TRACING
