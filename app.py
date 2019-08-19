@@ -34,7 +34,7 @@ cn_container_list = db.get_containers_by_rail()['CN']
 cn = cn.CanadianRail(cn_scrape_url, cn_container_list)
 
 container_html = cn.extract_containers_from_html()
-for i in range(len(container_html['eta_html'])-1):
+for i in range(len(container_html['eta_html'])):
     most_recent_location =  cn.get_recent_location(i, container_html)['most_recent_location']
     destination = cn.get_next_destination(i, container_html)['destination']
     final_eta = cn.get_final_eta(i, container_html)['final_eta']
