@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,6 +14,12 @@ class CanadianRail:
 
     def __format_containers_list(self):
         return ''.join([container[:-1] for container in self.containers_list])
+
+    def __extract_eta(self, eta_str, starting_index):
+        now = datetime.now()
+        last_index = starting_index + 4
+        final_eta_datetime = datetime.strptime(eta_str[starting_index:last_index], '%m%d')
+        return datetime.strftime(final_eta_datetime, '%m/%d/{}'.format(now.year))
 
     def __get_html_dict(self):
         formatted_containers_list = self.__format_containers_list()
@@ -52,26 +59,15 @@ class CanadianRail:
         return dict(destination=destination)
 
     def get_final_eta(self, index, _dict):
-        try:
-            now = datetime.now()
-            tracing_result_list = _dict['eta_html'][index].split()
-            if len(tracing_result_list) == 5:
-                final_eta_str = tracing_result_list[-2]
-                final_eta_datetime = datetime.strptime(final_eta_str[2:6], '%m%d')
-                final_eta = datetime.strftime(final_eta_datetime, '%m/%d/{}'.format(now.year))
-                return dict(final_eta=final_eta)
-            elif len(tracing_result_list) == 4:
-                final_eta_str = tracing_result_list[-2]
-                final_eta_datetime = datetime.strptime(final_eta_str[11:15], '%m%d')
-                final_eta = datetime.strftime(final_eta_datetime, '%m/%d/{}'.format(now.year))
-                return dict(final_eta=final_eta)
-            else:
-                final_eta_str = tracing_result_list[-1]
-                final_eta_datetime = datetime.strptime(final_eta_str[:4], '%m%d')
-                final_eta = datetime.strftime(final_eta_datetime, '%m/%d/{}'.format(now.year))
-                return dict(final_eta=final_eta)
-        except ValueError:  # catches strptime trying to turn letters into datetime object
-            print('Check if container tracing results split list is different length')
+        tracing_result_list = _dict['eta_html'][index].split()
+        first_int_index = re.search("\d", tracing_result_list[-1])
+        if first_int_index:
+            final_eta = self.__extract_eta(tracing_result_list[-1], first_int_index.start())
+        else:
+            first_int_index = re.search("\d", tracing_result_list[-2])
+            final_eta = self.__extract_eta(tracing_result_list[-2], first_int_index.start())
+
+        return dict(final_eta=final_eta)
 
     def remove_at(self, index, s):
         return s[:index] + s[index + 1:]
