@@ -9,6 +9,7 @@ BNSF RAIL TRACING
 '''
 bnsf = bnsf.BNSF()
 bnsf_container_list = db.get_containers_by_rail()['BNSF']
+bnsf_container_list.sort()
 bnsf_tracing_results_list = bnsf.get_tracing_results_dict(bnsf_container_list)
 for i, container in enumerate(bnsf_tracing_results_list):
     tracing_results = 'Last location: {}\nFinal destination: {} {}'.format(
@@ -17,7 +18,10 @@ for i, container in enumerate(bnsf_tracing_results_list):
         container['eta'],
     )
     db.update_container_tracing(bnsf_container_list[i], tracing_results)
-    db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
+    try:
+        db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
+    except IndexError:
+        pass
     if container['last_free_day']:
         db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
 
