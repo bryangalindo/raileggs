@@ -1,3 +1,7 @@
+#APL + CMA
+apl_scrape_url = 'https://www.apl.com/ebusiness/tracking/search?SearchBy=Container&Reference={}&search=Search'
+
+# BNSF
 bnsf_data = {
     'selectedValues': '',
     'spoolId': '',
