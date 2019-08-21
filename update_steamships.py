@@ -5,7 +5,6 @@ import apl
 apl = apl.APL()
 
 tracing_results_list = []
-scrape_url = 'https://www.apl.com/ebusiness/tracking/search?SearchBy=Container&Reference={}&search=Search'
 container_list = get_containers_by_steamship()['APLU'] + get_containers_by_steamship()['CMDU']
 
 for container in container_list:
