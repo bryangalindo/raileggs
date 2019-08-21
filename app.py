@@ -78,7 +78,7 @@ for k, v in uprr_tracing_results_dict.items():
         except TypeError:
             pass
 
-        eta_keywords = ['Estimated', 'Arrival']
+        eta_keywords = ['Estimated', 'Arrival', 'Scheduled']
         try:
             if any(keyword in scheduled_event for keyword in eta_keywords):
                 container_eta = up.get_container_eta(v)
