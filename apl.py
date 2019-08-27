@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 
 from database import airtable_containers_sheet
 
+
 def get_containers_by_steamship():
     containers_by_steamship_dict = defaultdict(list)
     airtable_records = airtable_containers_sheet.get_all(
