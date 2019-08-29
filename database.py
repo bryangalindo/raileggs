@@ -25,10 +25,28 @@ def get_containers_by_rail():
 
     return containers_by_rail_dict
 
+def get_containers_by_steamship():
+    containers_by_steamship_dict = defaultdict(list)
+    airtable_records = airtable_containers_sheet.get_all(
+        fields=['Container', 'MBL'],
+        view='Pending ANs'
+    )
 
-def update_container_tracing(container_number, tracing_results):
+    for record in airtable_records:
+        container = record['fields']['Container']
+        containers_by_steamship_dict[record['fields']['MBL'][0][:4]].append(container)
+
+    return containers_by_steamship_dict
+
+
+def update_container_tracing(container_number, tracing_results, tracing_type=('rail', 'ssl')):
     record = airtable_containers_sheet.search('Container', container_number)
-    fields = {'Tracing': tracing_results}
+
+    if 'rail' in tracing_type:
+        fields = {'Rail Tracing': tracing_results}
+    else:
+        fields = {'SSL Tracing': tracing_results}
+
     airtable_containers_sheet.update(record[0]['id'], fields)
 
 

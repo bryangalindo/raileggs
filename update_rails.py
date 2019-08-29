@@ -18,7 +18,7 @@ for i, container in enumerate(bnsf_tracing_results_list):
         container['final_destination'],
         container['eta'],
     )
-    db.update_container_tracing(bnsf_container_list[i], tracing_results)
+    db.update_container_tracing(bnsf_container_list[i], tracing_results, 'rail')
 
     try:
         db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
@@ -46,7 +46,7 @@ for i in range(len(container_html['eta_html'])):
         recent_event_dict['datetime'],
     )
 
-    db.update_container_tracing(cn_container_list[i], tracing_results)
+    db.update_container_tracing(cn_container_list[i], tracing_results, 'rail')
     db.update_container_eta(cn_container_list[i], final_eta)
     if 'constructive' in recent_event_dict['most_recent_event']:
         final_eta_datetime = datetime.strptime(final_eta, '%m/%d/%Y')
@@ -78,7 +78,7 @@ for k, v in uprr_tracing_results_dict.items():
         except TypeError:
             pass
 
-        eta_keywords = ['Estimated', 'Arrival']
+        eta_keywords = ['Estimated', 'Arrival', 'Scheduled']
         try:
             if any(keyword in scheduled_event for keyword in eta_keywords):
                 container_eta = up.get_container_eta(v)
@@ -87,7 +87,7 @@ for k, v in uprr_tracing_results_dict.items():
             pass
 
         tracing_results = '{}\n{}\n\n'.format(past_event, scheduled_event)
-        db.update_container_tracing(k, tracing_results)
+        db.update_container_tracing(k, tracing_results, 'rail')
         updated_containers_list.append(k)
 
 

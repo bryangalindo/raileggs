@@ -59,10 +59,15 @@ class CanadianRail:
         return dict(destination=destination)
 
     def get_final_eta(self, index, _dict):
+        global final_eta
         tracing_result_list = _dict['eta_html'][index].split()
         first_int_index = re.search("\d", tracing_result_list[-1])
-        if first_int_index:
+        if first_int_index and tracing_result_list[-1].isdigit():
             final_eta = self.__extract_eta(tracing_result_list[-1], first_int_index.start())
+        elif not first_int_index:
+            final_eta = '12/31/2019'
+        elif first_int_index and not tracing_result_list[-1].isdigit():
+            pass
         else:
             first_int_index = re.search("\d", tracing_result_list[-2])
             final_eta = self.__extract_eta(tracing_result_list[-2], first_int_index.start())
