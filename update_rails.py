@@ -5,6 +5,9 @@ import cn_rail as cn
 import database as db
 from constants import cn_scrape_url
 
+def has_digits(input_str):
+    return any(char.isdigit() for char in input_str)
+
 '''
 BNSF RAIL TRACING
 '''
@@ -24,7 +27,7 @@ for i, container in enumerate(bnsf_tracing_results_list):
         db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
     except IndexError:
         pass
-    if container['last_free_day']:
+    if has_digits(container['last_free_day']):
         db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
 
 '''
