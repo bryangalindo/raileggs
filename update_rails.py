@@ -40,10 +40,10 @@ for i in range(len(container_html['eta_html'])):
     final_eta = cn.get_final_eta(i, container_html)['final_eta']
     recent_event_dict = cn.get_recent_event(i, container_html)
 
-    tracing_results = 'Last location: {}\nFinal destination: {} {}\nLast event: {} {}'.format(
-        most_recent_location, destination,
-        final_eta, recent_event_dict['most_recent_event'],
-        recent_event_dict['datetime'],
+    tracing_results = 'Last location: {}\nLast event: {} {}\nFinal destination: {} ETA: {}'.format(
+        most_recent_location,
+        recent_event_dict['most_recent_event'], recent_event_dict['datetime'],
+        destination, final_eta,
     )
 
     db.update_container_tracing(cn_container_list[i], tracing_results, 'rail')
