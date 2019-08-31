@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 import bnsf
 import cn_rail as cn
 from constants import cn_scrape_url
@@ -44,6 +42,7 @@ for i in range(len(container_html['eta_html'])):
     destination = cn.get_next_destination(i, container_html)['destination']
     final_eta = cn.get_final_eta(i, container_html)['final_eta']
     recent_event_dict = cn.get_recent_event(i, container_html)
+    most_recent_event = recent_event_dict['most_recent_event']
 
     tracing_results = 'Last location: {}\nLast event: {} {}\nFinal destination: {} ETA: {}'.format(
         most_recent_location,
@@ -53,11 +52,7 @@ for i in range(len(container_html['eta_html'])):
 
     db.update_container_tracing(cn_container_list[i], tracing_results, 'rail')
     db.update_container_eta(cn_container_list[i], final_eta)
-    if 'constructive' in recent_event_dict['most_recent_event']:
-        final_eta_datetime = datetime.strptime(final_eta, '%m/%d/%Y')
-        last_free_day_datetime = final_eta_datetime + timedelta(days=2)
-        last_free_day = datetime.strftime(last_free_day_datetime, '%m/%d/%Y')
-        db.update_container_lfd(cn_container_list[i], last_free_day)
+    db.update_container_lfd(cn_container_list[i], cn.get_last_free_day(most_recent_event))
 
 '''
 UP RAIL TRACING
