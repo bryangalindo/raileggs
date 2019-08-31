@@ -3,6 +3,7 @@ import multiprocessing
 import requests
 
 import apl
+import hpl
 import msc
 from database import get_containers_by_steamship, update_container_eta, update_container_tracing
 
@@ -31,3 +32,14 @@ for container in msc_containers_list:
     html = msc.get_tracing_results_html(container)
     update_container_tracing(container, msc.get_all_events(html), 'ssl')
     update_container_eta(container, msc.get_vessel_eta(html))
+
+hpl = hpl.HPL(session)
+hapag_containers_list = get_containers_by_steamship()['HLCU']
+
+for container in hapag_containers_list:
+    try:
+        html = hpl.get_tracing_results_html(container)
+        update_container_tracing(container, hpl.get_all_events(html), 'ssl')
+        update_container_eta(container, hpl.get_vessel_eta(html))
+    except AttributeError:
+        pass
