@@ -76,3 +76,6 @@ load_status_dict = {
 
 # MSC Scraping URL
 msc_url = 'https://www.shipup.net/en/tracking/container/msc/{}/'
+
+# HAPAG LLOYD Scraping URL
+hapag_url = 'https://www.shipup.net/en/tracking/container/hapag-lloyd/{}/'
