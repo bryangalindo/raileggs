@@ -79,3 +79,7 @@ msc_url = 'https://www.shipup.net/en/tracking/container/msc/{}/'
 
 # HAPAG LLOYD Scraping URL
 hapag_url = 'https://www.shipup.net/en/tracking/container/hapag-lloyd/{}/'
+
+# Cosco Scraping URLs
+cosco_recent_event_url = 'http://elines.coscoshipping.com/ebtracking/public/containers/{}?timestamp={}'
+cosco_vessel_eta_url = 'http://elines.coscoshipping.com/ebtracking/public/container/eta/{}?timestamp={}'
