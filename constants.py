@@ -1,5 +1,5 @@
 #APL + CMA
-apl_scrape_url = 'https://www.apl.com/ebusiness/tracking/search?SearchBy=Container&Reference={}&search=Search'
+apl_scrape_url = 'https://www.apl.py.com/ebusiness/tracking/search?SearchBy=Container&Reference={}&search=Search'
 
 # BNSF
 bnsf_data = {
@@ -24,8 +24,6 @@ bnsf_data = {
 #UP Railroad
 uprr_scrape_url = "https://c02.my.uprr.com/api/service/customer/trace-equipment/1.3/?equipmentIds={}"
 uprr_request_token_url = "https://c02.my.uprr.com/api/oauth/token"
-username = "XTUF398"
-password = "corn6161"
 uprr_encoded_credentials = 'WFRVRjM5ODpjb3JuNjE2MQ=='
 uprr_data_dict = {"grant_type": "client_credentials"}
 uprr_headers_dict = {
@@ -43,7 +41,8 @@ BASE_KEY = 'appFPCcBh4dt4UOPb'
 SHEET = 'Tracker'
 
 # CN RAIL CONSTANTS
-cn_scrape_url = 'https://automate.cn.ca/ecomsrvc/velocity/Tracing/english/TracingDirect_DirectAccess?&Function=STI&UserID=CENTRANSCN&Password=CENTRANSCN&Format={}&EquipmentID={}'
+cn_scrape_url = 'https://automate.cn.ca/ecomsrvc/velocity/Tracing/english/TracingDirect_DirectAccess?&Function=STI&' \
+                'UserID=CENTRANSCN&Password=CENTRANSCN&Format={}&EquipmentID={}'
 
 cn_rail_events_dict = {
     'A': 'Arrived at location',
