@@ -1,18 +1,17 @@
 from datetime import datetime
 
-import requests
 from bs4 import BeautifulSoup
 
-from database import get_containers_by_steamship, update_container_tracing, update_container_eta
-
-url = 'https://www.shipup.net/en/tracking/container/msc/{}/'
+from constants import msc_url
 
 class MSC:
+    def __init__(self, session):
+        self.session = session
+
     def get_tracing_results_html(self, container):
-        s = requests.get(url.format(container))
-        r = requests.get(url.format(container))
-        html = BeautifulSoup(r.content, 'lxml')
-        return html
+        print('Scraping {}'.format(container))
+        response = self.session.get(msc_url.format(container))
+        return BeautifulSoup(response.content, 'lxml')
 
     def get_vessel_eta(self, html):
         vessel_eta_div = html.find('div', {'id': 'containerETA'})
@@ -33,21 +32,11 @@ class MSC:
             else:
                 break
 
-        return '\n'.join(scheduled_events_list)
+        scheduled_events_list.reverse()
+        return '\n\t\t\t\t\t'.join(scheduled_events_list)
 
     def get_all_events(self, html):
         tracing_results_html_table = html.find('tbody', {'class': 'results-content'})
         scheduled_events = self.get_scheduled_events(tracing_results_html_table)
         most_recent_events = self.get_most_recent_event(tracing_results_html_table)
-        return 'Most Recent Event:\t{}\nScheduled Events:\t{}\n'.format(most_recent_events, scheduled_events)
-
-
-
-if __name__ == '__main__':
-    msc = MSC()
-    containers_list = get_containers_by_steamship()['MEDU']
-
-    for container in containers_list:
-        html = msc.get_tracing_results_html(container)
-        update_container_tracing(container, msc.get_all_events(html), 'ssl')
-        update_container_eta(container, msc.get_vessel_eta(html))
+        return 'Most Recent Event:\t{}\nScheduled Events:\t\t{}'.format(most_recent_events, scheduled_events)
