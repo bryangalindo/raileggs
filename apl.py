@@ -1,14 +1,17 @@
 from datetime import datetime
 
-import requests
 from bs4 import BeautifulSoup
 
 from constants import apl_scrape_url
 
 
 class APL:
+    def __init__(self, session):
+        self.session = session
+
     def get_tracing_results_html(self, container):
-        r = requests.get(apl_scrape_url.format(container))
+        print('Scraping {}'.format(container))
+        r = self.session.get(apl_scrape_url.format(container))
         html = BeautifulSoup(r.content, 'lxml')
         return html.find('tbody')
 
@@ -46,12 +49,12 @@ class APL:
 
         return scheduled_events_list
 
-    def get_tracing_results_dict(self, container, _list):
+    def get_tracing_results_dict(self, container):
         tracing_results_table = self.get_tracing_results_html(container)
         most_recent_event_dict = self.get_most_recent_event(tracing_results_table)
         scheduled_events = self.get_scheduled_events(tracing_results_table)
         vessel_eta = self.get_vessel_eta(tracing_results_table)
-        _list.append(
+        return (
             dict(
                 container=container,
                 vessel_eta=vessel_eta,
@@ -63,14 +66,14 @@ class APL:
     def format_tracing_results(self, _dict):
         all_scheduled_events_str = ''
         for i, items in enumerate(_dict['scheduled_events']):
-            event_str = '{} {} {}\n'.format(
+            event_str = '{} {} {}\n\t\t\t\t\t'.format(
                 _dict['scheduled_events'][i]['event_description'],
                 _dict['scheduled_events'][i]['location'],
                 _dict['scheduled_events'][i]['datetime'],
             )
             all_scheduled_events_str = all_scheduled_events_str + event_str
 
-        return 'Most Recent Event: {} {} {}\nScheduled Events: {}'.format(
+        return 'Most Recent Event:\t{} {} {}\nScheduled Events:\t\t{}'.format(
             _dict['most_recent_event']['event_description'],
             _dict['most_recent_event']['location'],
             _dict['most_recent_event']['datetime'],
