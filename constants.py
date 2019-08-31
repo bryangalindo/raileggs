@@ -1,5 +1,5 @@
 #APL + CMA
-apl_scrape_url = 'https://www.apl.py.com/ebusiness/tracking/search?SearchBy=Container&Reference={}&search=Search'
+apl_scrape_url = 'https://www.apl.com/ebusiness/tracking/search?SearchBy=Container&Reference={}&search=Search'
 
 # BNSF
 bnsf_data = {
@@ -73,3 +73,6 @@ load_status_dict = {
     'L': 'Loaded',
     'E': 'Empty'
 }
+
+# MSC Scraping URL
+msc_url = 'https://www.shipup.net/en/tracking/container/msc/{}/'
