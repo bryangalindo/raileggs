@@ -1,16 +1,33 @@
-from database import get_containers_by_steamship, update_container_eta, update_container_tracing
+import multiprocessing
+
+import requests
 
 import apl
+import msc
+from database import get_containers_by_steamship, update_container_eta, update_container_tracing
 
-apl = apl.APL()
+session = requests.Session()
 
+apl = apl.APL(session)
 tracing_results_list = []
-container_list = get_containers_by_steamship()['APLU'] + get_containers_by_steamship()['CMDU']
+apl_containers_list = get_containers_by_steamship()['APLU'] + get_containers_by_steamship()['CMDU']
 
-for container in container_list:
-    apl.get_tracing_results_dict(container, tracing_results_list)
+pool = multiprocessing.Pool(processes=len(apl_containers_list))
+with pool as p:
+    tracing_results = p.map(apl.get_tracing_results_dict, apl_containers_list)
+    for result in tracing_results:
+        tracing_results_list.append(result)
 
 for result in tracing_results_list:
     formatted_tracing_results = apl.format_tracing_results(result)
     update_container_eta(result['container'], result['vessel_eta'])
     update_container_tracing(result['container'], formatted_tracing_results, 'ssl')
+
+
+msc = msc.MSC(session)
+msc_containers_list = get_containers_by_steamship()['MEDU']
+
+for container in msc_containers_list:
+    html = msc.get_tracing_results_html(container)
+    update_container_tracing(container, msc.get_all_events(html), 'ssl')
+    update_container_eta(container, msc.get_vessel_eta(html))
