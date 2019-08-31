@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
-import unionpacific as uprr
+
 import bnsf
 import cn_rail as cn
-import database as db
 from constants import cn_scrape_url
-
-def has_digits(input_str):
-    return any(char.isdigit() for char in input_str)
+import database as db
+import unionpacific as uprr
+from utilities import has_digits
 
 '''
 BNSF RAIL TRACING
@@ -15,19 +14,22 @@ bnsf = bnsf.BNSF()
 bnsf_container_list = db.get_containers_by_rail()['BNSF']
 bnsf_container_list.sort()
 bnsf_tracing_results_list = bnsf.get_tracing_results_dict(bnsf_container_list)
+
 for i, container in enumerate(bnsf_tracing_results_list):
-    tracing_results = 'Last location: {}\nFinal destination: {} {}'.format(
-        container['last_location'],
-        container['final_destination'],
-        container['eta'],
-    )
+    tracing_template = 'Last location: {}\nFinal destination: {} {}'
+    tracing_results = tracing_template.format(container['last_location'],
+                                              container['final_destination'],
+                                              container['eta'],
+                                              )
+
     db.update_container_tracing(bnsf_container_list[i], tracing_results, 'rail')
 
     try:
         db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
     except IndexError:
         pass
-    if has_digits(container['last_free_day']):
+
+    if has_digits(container['last_free_day']):  # bnsf returns N/A before posting LFD
         db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
 
 '''
@@ -38,7 +40,7 @@ cn = cn.CanadianRail(cn_scrape_url, cn_container_list)
 
 container_html = cn.extract_containers_from_html()
 for i in range(len(container_html['eta_html'])):
-    most_recent_location =  cn.get_recent_location(i, container_html)['most_recent_location']
+    most_recent_location = cn.get_recent_location(i, container_html)['most_recent_location']
     destination = cn.get_next_destination(i, container_html)['destination']
     final_eta = cn.get_final_eta(i, container_html)['final_eta']
     recent_event_dict = cn.get_recent_event(i, container_html)
@@ -92,6 +94,5 @@ for k, v in uprr_tracing_results_dict.items():
         tracing_results = '{}\n{}\n\n'.format(past_event, scheduled_event)
         db.update_container_tracing(k, tracing_results, 'rail')
         updated_containers_list.append(k)
-
 
 print('{} have been updated'.format(' '.join(updated_containers_list)))
