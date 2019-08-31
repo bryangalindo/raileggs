@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 
 import requests
@@ -73,6 +73,12 @@ class CanadianRail:
             final_eta = self.__extract_eta(tracing_result_list[-2], first_int_index.start())
 
         return dict(final_eta=final_eta)
+
+    def get_last_free_day(self, _string):
+        if 'constructive' in _string:
+            final_eta_datetime = datetime.strptime(final_eta, '%m/%d/%Y')
+            last_free_day_datetime = final_eta_datetime + timedelta(days=2)
+            return datetime.strftime(last_free_day_datetime, '%m/%d/%Y')
 
     def remove_at(self, index, s):
         return s[:index] + s[index + 1:]
