@@ -8,10 +8,10 @@ from utilities import has_digits
 '''
 BNSF RAIL TRACING
 '''
-bnsf = bnsf.BNSF()
 bnsf_container_list = db.get_containers_by_rail()['BNSF']
 bnsf_container_list.sort()
-bnsf_tracing_results_list = bnsf.get_tracing_results_dict(bnsf_container_list)
+bnsf = bnsf.BNSF(bnsf_container_list)
+bnsf_tracing_results_list = bnsf.get_tracing_results_dict()
 
 for i, container in enumerate(bnsf_tracing_results_list):
     tracing_template = 'Last location: {}\nFinal destination: {} {}'
