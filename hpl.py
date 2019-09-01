@@ -1,42 +1,60 @@
-from datetime import datetime
-
+import re
 from bs4 import BeautifulSoup
+import selenium.webdriver.support.ui as ui
 
-from constants import hapag_url
 
 class HPL:
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, driver):
+        self.driver = driver
 
-    def get_tracing_results_html(self, container):
-        print('Scraping {}'.format(container))
-        response = self.session.get(hapag_url.format(container))
-        return BeautifulSoup(response.content, 'lxml')
+    def get_tracing_results_html(self, ):
+        return BeautifulSoup(self.driver.page_source, 'lxml')
 
-    def get_vessel_eta(self, html):
-        vessel_eta_div = html.find('div', {'id': 'containerETA'})
-        vessel_eta_str = vessel_eta_div.find('abbr').attrs['title']
-        vessel_eta_datetime = datetime.strptime(vessel_eta_str[:-12], '%A, %B %d, %Y')
-        vessel_eta = datetime.strftime(vessel_eta_datetime, '%m/%d/%Y')
+    def get_most_recent_event(self, html):
+        most_recent_event_tag = html.find('table', {'id': 'tracing_by_container_f:hl56'})
+        return most_recent_event_tag.text.split('Last Movement ')[1]
+
+    def get_scheduled_events_list(self, html):
+        scheduled_events_list = []
+        tracing_results_html_table = html.find('table', {'id': 'tracing_by_container_f:hl66'})
+        tracing_results_rows = tracing_results_html_table.find_all('tr')
+        tracing_results_rows.reverse()
+
+        for row in tracing_results_rows:
+            if row.find('td', {'class': 'strong'}):
+                break
+            else:
+                scheduled_event = ' '.join([column.text for column in row.find_all('td')])
+                scheduled_events_list.insert(0, scheduled_event)
+
+        return scheduled_events_list
+
+    def get_vessel_eta(self, _list):
+        vessel_arrivals_list = []
+        for item in _list:
+            if 'Vessel arrival' in item:
+                vessel_arrivals_list.append(item)
+
+        vessel_eta = (re.search('\d+-\d+-\d+', vessel_arrivals_list[-1])).group()
         return vessel_eta
 
-    def get_most_recent_event(self, html_table):
-        return (html_table.find('tr', {'class': 'current'})).text.replace('\n', ' ')
+    def get_all_events_dict(self, url, container):
+        self.driver.get(url.format(container))
+        wait = ui.WebDriverWait(self.driver, 10)
 
-    def get_scheduled_events(self, html_table):
-        html_table_rows = html_table.find_all('tr')
-        scheduled_events_list = []
-        for i, row in enumerate(html_table_rows):
-            if not html_table_rows[i].attrs:
-                scheduled_events_list.append(row.text.replace('\n', ' '))
-            else:
-                break
+        wait.until(lambda driver: driver.title.lower().startswith('tracing'))
+        wait.until(lambda driver: driver.find_element_by_id('tracing_by_container_f:hl56'))
 
-        scheduled_events_list.reverse()
-        return '\n\t\t\t\t\t'.join(scheduled_events_list)
+        html = self.get_tracing_results_html()
+        most_recent_event = self.get_most_recent_event(html)
+        scheduled_events_list = self.get_scheduled_events_list(html)
 
-    def get_all_events(self, html):
-        tracing_results_html_table = html.find('tbody', {'class': 'results-content'})
-        scheduled_events = self.get_scheduled_events(tracing_results_html_table)
-        most_recent_events = self.get_most_recent_event(tracing_results_html_table)
-        return 'Most Recent Event:\t{}\nScheduled Events:\t\t{}'.format(most_recent_events, scheduled_events)
+        return dict(most_recent_event=most_recent_event,
+                    scheduled_events=scheduled_events_list)
+
+    def get_formatted_tracing_results(self, _dict):
+        most_recent_event = _dict['most_recent_event']
+        scheduled_events_list = _dict['scheduled_events']
+        formatted_scheduled_events = '\n\t\t\t\t\t'.join(scheduled_events_list)
+        return 'Most Recent Event:\t{}\nScheduled Events:\t{}'.format(most_recent_event,
+                                                                      formatted_scheduled_events)

@@ -1,9 +1,12 @@
 import multiprocessing
 import time
+import contextlib
 
 import requests
+import selenium.webdriver as webdriver
 
 import apl
+from constants import driver_path, hapag_url
 import cosco
 from database import get_containers_by_steamship, update_container_eta, update_container_tracing
 import hpl
@@ -38,23 +41,30 @@ msc = msc.MSC(session)
 msc_containers_list = get_containers_by_steamship()['MEDU']
 
 for container in msc_containers_list:
-    html = msc.get_tracing_results_html(container)
-    update_container_tracing(container, msc.get_all_events(html), 'ssl')
-    update_container_eta(container, msc.get_vessel_eta(html))
+    try:
+        html = msc.get_tracing_results_html(container)
+        update_container_tracing(container, msc.get_all_events(html), 'ssl')
+        update_container_eta(container, msc.get_vessel_eta(html))
+    except AttributeError:
+        pass
 
 '''
 HAPAG TRACKING
 '''
-hpl = hpl.HPL(session)
-hapag_containers_list = get_containers_by_steamship()['HLCU']
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
+driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
 
-for container in hapag_containers_list:
-    try:
-        html = hpl.get_tracing_results_html(container)
-        update_container_tracing(container, hpl.get_all_events(html), 'ssl')
-        update_container_eta(container, hpl.get_vessel_eta(html))
-    except AttributeError:
-        pass
+with contextlib.closing(driver) as driver:
+    hpl = hpl.HPL(driver)
+    hpl_containers_list = get_containers_by_steamship()['HLCU']
+
+    for container in hpl_containers_list:
+        events_dict = hpl.get_all_events_dict(hapag_url, container)
+        tracing_results = hpl.get_formatted_tracing_results(events_dict)
+        vessel_eta = hpl.get_vessel_eta(events_dict['scheduled_events'])
+        update_container_tracing(container, tracing_results, 'ssl')
+        update_container_eta(container, vessel_eta)
 
 '''
 COSCO TRACKING
@@ -85,4 +95,3 @@ for container in one_containers_list:
     vessel_eta = one.get_vessel_eta(container)
     update_container_eta(container, vessel_eta)
     update_container_tracing(container, tracing_results, 'ssl')
-
