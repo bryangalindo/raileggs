@@ -7,7 +7,7 @@ class HPL:
     def __init__(self, driver):
         self.driver = driver
 
-    def get_tracing_results_html(self, ):
+    def get_tracing_results_html(self):
         return BeautifulSoup(self.driver.page_source, 'lxml')
 
     def get_most_recent_event(self, html):
