@@ -6,15 +6,28 @@ import requests
 import selenium.webdriver as webdriver
 
 import apl
-from constants import driver_path, hapag_url
+from constants import driver_path, hapag_url, backup_msc_url
 import cosco
 from database import get_containers_by_steamship, update_container_eta, update_container_tracing
 import hpl
 import msc
+import msc_selenium
 import one_line
 
-
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
+driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
 session = requests.Session()
+
+
+def get_backup_msc_tracing(driver):
+    msc = msc_selenium.MSC(driver)
+    events_dict = msc.get_all_events_dict(backup_msc_url, container)
+    tracing_results = msc.get_formatted_tracing_results(events_dict)
+    vessel_eta = events_dict['vessel_eta']
+    update_container_eta(container, vessel_eta)
+    update_container_tracing(container, tracing_results, 'ssl')
+
 
 '''
 APL TRACKING
@@ -46,14 +59,13 @@ for container in msc_containers_list:
         update_container_tracing(container, msc.get_all_events(html), 'ssl')
         update_container_eta(container, msc.get_vessel_eta(html))
     except AttributeError:
-        pass
+        with contextlib.closing(driver) as driver:
+            get_backup_msc_tracing(driver)
+
 
 '''
 HAPAG TRACKING
 '''
-options = webdriver.ChromeOptions()
-options.add_argument('headless')
-driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
 
 with contextlib.closing(driver) as driver:
     hpl = hpl.HPL(driver)
