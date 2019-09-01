@@ -83,3 +83,25 @@ hapag_url = 'https://www.shipup.net/en/tracking/container/hapag-lloyd/{}/'
 # Cosco Scraping URLs
 cosco_recent_event_url = 'http://elines.coscoshipping.com/ebtracking/public/containers/{}?timestamp={}'
 cosco_vessel_eta_url = 'http://elines.coscoshipping.com/ebtracking/public/container/eta/{}?timestamp={}'
+
+# ONE line Scraping URL
+one_line_url = 'https://ecomm.one-line.com/ecom/CUP_HOM_3301GS.do'
+
+form_data_payload = {
+    'f_cmd': '122',
+    'cntr_no': '{}',
+    'cust_cd': '',
+    'search_type': 'C',
+}
+
+vessel_eta_payload = {
+    'f_cmd': '124',
+    'bkg_no': '{}',
+}
+
+events_payload = {
+    'f_cmd': '125',
+    'cntr_no': '{}',
+    'bkg_no': '{}',
+    'cop_no': '{}',
+}
