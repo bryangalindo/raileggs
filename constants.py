@@ -77,8 +77,9 @@ load_status_dict = {
 # MSC Scraping URL
 msc_url = 'https://www.shipup.net/en/tracking/container/msc/{}/'
 
-# HAPAG LLOYD Scraping URL
-hapag_url = 'https://www.shipup.net/en/tracking/container/hapag-lloyd/{}/'
+# HAPAG LLOYD
+hapag_url = 'https://www.hapag-lloyd.com/en/online-business/tracing/tracing-by-container.html?container={}'
+driver_path = '/Users/bryangalindo/PycharmProjects/raileggs_beta/raileggs/chromedriver'
 
 # Cosco Scraping URLs
 cosco_recent_event_url = 'http://elines.coscoshipping.com/ebtracking/public/containers/{}?timestamp={}'
