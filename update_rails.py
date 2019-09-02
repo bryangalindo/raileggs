@@ -1,9 +1,18 @@
+import contextlib
+
 import bnsf
 import cn_rail as cn
-from constants import cn_scrape_url
+import cp_rail as cp
+from constants import cn_scrape_url, driver_path
 import database as db
 import unionpacific as uprr
 from utilities import has_digits
+import selenium.webdriver as webdriver
+
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
+driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
+
 
 '''
 BNSF RAIL TRACING
@@ -33,8 +42,7 @@ for i, container in enumerate(bnsf_tracing_results_list):
 '''
 CN RAIL TRACING
 '''
-# cn_container_list = db.get_containers_by_rail()['CN']
-cn_container_list = ['OOLU9974071']
+cn_container_list = db.get_containers_by_rail()['CN']
 cn = cn.CanadianRail(cn_scrape_url, cn_container_list)
 container_html = cn.extract_containers_from_html()
 
@@ -98,4 +106,17 @@ for k, v in uprr_tracing_results_dict.items():
         db.update_container_tracing(k, tracing_results, 'rail')
         updated_containers_list.append(k)
 
-print('{} have been updated'.format(' '.join(updated_containers_list)))
+'''
+CP RAIL TRACKING
+'''
+cp_containers_list = db.get_containers_by_rail()['CP']
+cp = cp.CanadianPacific(driver, cp_containers_list)
+
+with contextlib.closing(driver) as driver:
+    tracing_results_list = cp.get_tracing_results_list()
+    for result in tracing_results_list:
+        tracing_result = cp.get_formatted_tracing_results(result)
+        eta = result['final_destination_eta']
+        db.update_container_tracing(result['container_number'], tracing_result, 'rail')
+        if eta:
+            db.update_container_eta(result['container_number'], eta)
