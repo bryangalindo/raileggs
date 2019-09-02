@@ -51,4 +51,4 @@ class ONE:
         scheduled_events_list = _dict['scheduled_events']
         scheduled_events_list.reverse()
         scheduled_events = '\n\t\t\t\t\t'.join(scheduled_events_list)
-        return 'Most Recent Event:\t{}\nScheduled Events:\t\t{}'.format(most_recent_event, scheduled_events)
+        return 'Most Recent Event:\t{}\nScheduled Events:\t{}'.format(most_recent_event, scheduled_events)
