@@ -73,7 +73,7 @@ class APL:
             )
             all_scheduled_events_str = all_scheduled_events_str + event_str
 
-        return 'Most Recent Event:\t{} {} {}\nScheduled Events:\t\t{}'.format(
+        return 'Most Recent Event:\t{} {} {}\nScheduled Events:\t{}'.format(
             _dict['most_recent_event']['event_description'],
             _dict['most_recent_event']['location'],
             _dict['most_recent_event']['datetime'],
