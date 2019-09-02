@@ -76,6 +76,8 @@ load_status_dict = {
 
 # MSC Scraping URL
 msc_url = 'https://www.shipup.net/en/tracking/container/msc/{}/'
+backup_msc_url = 'https://www.msc.com/track-a-shipment?agencyPath=usa'
+
 
 # HAPAG LLOYD
 hapag_url = 'https://www.hapag-lloyd.com/en/online-business/tracing/tracing-by-container.html?container={}'
@@ -106,3 +108,7 @@ events_payload = {
     'bkg_no': '{}',
     'cop_no': '{}',
 }
+
+# CP RAIL
+cp_login_url = 'https://www8.cpr.ca/cpcustomerstation/'
+cp_tracing_url = 'https://www.cprintermodal.ca/customer/LoadTracing.do'
