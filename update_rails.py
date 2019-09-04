@@ -11,33 +11,34 @@ import selenium.webdriver as webdriver
 
 options = webdriver.ChromeOptions()
 options.add_argument('headless')
-driver = webdriver.Chrome(executable_path=driver_path, chrome_options=options)
+driver = webdriver.Chrome(executable_path=driver_path)
 
 
 '''
 BNSF RAIL TRACING
 '''
 bnsf_container_list = db.get_containers_by_rail()['BNSF']
-bnsf_container_list.sort()
-bnsf = bnsf.BNSF(bnsf_container_list)
-bnsf_tracing_results_list = bnsf.get_tracing_results_dict()
+if bnsf_container_list:
+    bnsf_container_list.sort()
+    bnsf = bnsf.BNSF(bnsf_container_list)
+    bnsf_tracing_results_list = bnsf.get_tracing_results_dict()
 
-for i, container in enumerate(bnsf_tracing_results_list):
-    tracing_template = 'Last location: {}\nFinal destination: {} {}'
-    tracing_results = tracing_template.format(container['last_location'],
-                                              container['final_destination'],
-                                              container['eta'],
-                                              )
+    for i, container in enumerate(bnsf_tracing_results_list):
+        tracing_template = 'Last location: {}\nFinal destination: {} {}'
+        tracing_results = tracing_template.format(container['last_location'],
+                                                  container['final_destination'],
+                                                  container['eta'],
+                                                  )
 
-    db.update_container_tracing(bnsf_container_list[i], tracing_results, 'rail')
+        db.update_container_tracing(bnsf_container_list[i], tracing_results, 'rail')
 
-    try:
-        db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
-    except IndexError:
-        pass
+        try:
+            db.update_container_eta(bnsf_container_list[i], container['eta'].split()[0])
+        except IndexError:
+            pass
 
-    if has_digits(container['last_free_day']):  # bnsf returns N/A before posting LFD
-        db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
+        if has_digits(container['last_free_day']):  # bnsf returns N/A before posting LFD
+            db.update_container_lfd(bnsf_container_list[i], container['last_free_day'])
 
 '''
 CN RAIL TRACING
@@ -117,6 +118,12 @@ with contextlib.closing(driver) as driver:
     for result in tracing_results_list:
         tracing_result = cp.get_formatted_tracing_results(result)
         eta = result['final_destination_eta']
-        db.update_container_tracing(result['container_number'], tracing_result, 'rail')
+
+        if result['last_free_day']:
+            db.update_container_lfd(result['container_number'], result['last_free_day'])
         if eta:
             db.update_container_eta(result['container_number'], eta)
+            db.update_container_tracing(result['container_number'], tracing_result, 'rail')
+        else:
+            db.update_container_eta(result['container_number'], '12/31/2019')
+            db.update_container_tracing(result['container_number'], result['current_status'], 'rail')

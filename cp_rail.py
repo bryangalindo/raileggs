@@ -53,17 +53,21 @@ class CanadianPacific:
                 final_destination_eta = tracing_results_columns[7].text.strip()[1:11]
             else:
                 final_destination_eta = ''
-            lfd = tracing_results_columns[-2].text.strip()
+            if tracing_results_columns[-2].text.strip():
+                last_free_day = tracing_results_columns[-2].text.strip().split()[0]
+            else:
+                last_free_day = ''
             tracing_results_list.append(
                 dict(
                     container_number=self.containers_list[i],
                     current_status=current_status,
                     most_recent_event=most_recent_event,
                     final_destination_eta=final_destination_eta,
-                    lfd=lfd
+                    last_free_day=last_free_day
                 )
             )
-            return tracing_results_list
+
+        return tracing_results_list
 
     def get_formatted_tracing_results(self, _dict):
         return 'Most Recent Event:\t{}\nCurrent Status:\t\t{} ETA: {}'.format(_dict['most_recent_event'],
