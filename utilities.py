@@ -9,4 +9,4 @@ def has_digits(input_str):
 def start_headless_driver():
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
-    return webdriver.Chrome(executable_path=driver_path)
+    return webdriver.Chrome(executable_path=driver_path, chrome_options=options)
