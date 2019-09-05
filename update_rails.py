@@ -36,28 +36,36 @@ if cn_container_list:
     container_html = cn.extract_containers_from_html()
 
     for i, item in enumerate(container_html['eta_html']):
-        most_recent_location = cn.get_recent_location(i, container_html)['most_recent_location']
-        destination = cn.get_next_destination(i, container_html)['destination']
-        recent_event_dict = cn.get_recent_event(i, container_html)
-        most_recent_event = recent_event_dict['most_recent_event']
-        try:
-            final_eta = cn.get_final_eta(i, container_html)['final_eta']
-        except NameError:
-            final_eta = recent_event_dict['datetime'].split()[0]
+        if 'NO RECORD' not in item:
+            most_recent_location = cn.get_recent_location(i, container_html)['most_recent_location']
+            destination = cn.get_next_destination(i, container_html)['destination']
+            recent_event_dict = cn.get_recent_event(i, container_html)
+            most_recent_event = recent_event_dict['most_recent_event']
+            try:
+                final_eta = cn.get_final_eta(i, container_html)['final_eta']
+            except NameError:
+                final_eta = recent_event_dict['datetime'].split()[0]
 
-        tracing_results = 'Last location: {}\nLast event: {} {}\nFinal destination: {} ETA: {}'.format(
-            most_recent_location,
-            recent_event_dict['most_recent_event'], recent_event_dict['datetime'],
-            destination, final_eta,
-        )
+            tracing_results = 'Last location: {}\nLast event: {} {}\nFinal destination: {} ETA: {}\nLast Check On: {}'.format(
+                most_recent_location,
+                recent_event_dict['most_recent_event'], recent_event_dict['datetime'],
+                destination, final_eta,
+                datetime.now()
+            )
 
-        db.update_container_tracing(cn_container_list[i], tracing_results, 'rail')
-        last_free_day = cn.get_last_free_day(most_recent_event)
+            db.update_container_tracing(cn_container_list[i], tracing_results, 'rail')
+            last_free_day = cn.get_last_free_day(most_recent_event)
 
-        if last_free_day:
-            db.update_container_lfd(cn_container_list[i], last_free_day)
-        else:
+            if last_free_day:
+                db.update_container_lfd(cn_container_list[i], last_free_day)
+            else:
+                db.update_container_eta(cn_container_list[i], final_eta)
+        elif 'NO RECORD' in item:
+            tracing_result = 'Pending Rail\nLast Checked On: {}'.format(datetime.now())
+            final_eta = '12/31/2019'
+            db.update_container_tracing(cn_container_list[i], tracing_result, 'rail')
             db.update_container_eta(cn_container_list[i], final_eta)
+
 
 '''
 UP RAIL TRACING
