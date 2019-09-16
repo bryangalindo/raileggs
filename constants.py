@@ -112,3 +112,18 @@ events_payload = {
 # CP RAIL
 cp_login_url = 'https://www8.cpr.ca/cpcustomerstation/'
 cp_tracing_url = 'https://www.cprintermodal.ca/customer/LoadTracing.do'
+
+# CSX
+csx_url = 'https://next.shipcsx.com/sxrw-ship/api/v1/shipments/search'
+csx_headers = {
+    'Content-Type': 'application/json; charset=utf-8',
+}
+
+# headers
+headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit'
+                                    '/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'}
+
+# Norfolk Southern
+ns_login_dict = {"id": "kwgwf", "pwd": "741Bag963!"}
+ns_login_url = 'https://accessns.nscorp.com/accessNS/rest/auth/v3/login'
+ns_tracing_url = 'https://accessns.nscorp.com/accessNS/rest/backend-v2-with-customer/Services/services/intermodal/v2/freightforward/2'
