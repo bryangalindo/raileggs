@@ -65,7 +65,54 @@ if cn_container_list:
             final_eta = '12/31/2019'
             db.update_container_tracing(cn_container_list[i], tracing_result, 'rail')
             db.update_container_eta(cn_container_list[i], final_eta)
+            
+'''
+NORTHFOLK SOUTHERN
+'''
+ns_containers_list = db.get_containers_by_rail()['NORTHFOLK SOUTHERN']
+if ns_containers_list:
+    with requests.session() as s:
+        for i, container in enumerate(ns_containers_list):
+            ns = ns.NorfolkSouthern(s)
+            tracing_results_dict = ns.get_tracing_results_dict(ns_containers_list[i], s)
+            eta = ns.get_eta(tracing_results_dict, i).split()[0]
+            last_free_day = ns.get_last_free_day(tracing_results_dict, i)
+            most_recent_event = ns.get_most_recent_event(tracing_results_dict, i)
+            scheduled_event = ns.get_scheduled_event(tracing_results_dict, i)
+            tracing_result = ns.get_formatted_tracing_results(most_recent_event, scheduled_event)
 
+            if eta:
+                db.update_container_eta(container, eta, 'rail')
+            if last_free_day:
+                db.update_container_lfd(container, last_free_day)
+            else:
+                db.update_container_tracing(container, tracing_result, 'rail')
+
+'''
+CSX RAIL
+'''                           
+csx = csx.CSX()
+csx_containers_dict = csx.get_containers_dict()
+if csx_containers_dict:
+    tracing_results_list = csx.get_tracing_results_list()
+
+    for result in tracing_results_list:
+        container_key = result['equipment']['equipmentID']['equipmentInitial'] + \
+                        result['equipment']['equipmentID']['equipmentNumber']
+        container = csx_containers_dict[container_key]
+        try:
+            if result['tripPlan']:
+                try:
+                    eta = result['tripPlan']['updatedEtn'].split('T')[0]
+                except KeyError:
+                    eta = result['tripPlan']['originalEtn'].split('T')[0]
+                db.update_container_eta(container, eta, 'rail')
+        except KeyError:
+            db.update_container_eta(container, '12/31/2019', 'rail')
+
+        if 'NOTIFIED' in result['shipmentStatus']:
+            last_free_day = result['premise']['paidThruDate']
+            db.update_container_lfd(container, last_free_day)
 
 '''
 UP RAIL TRACING
